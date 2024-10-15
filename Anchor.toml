@@ -1,0 +1,20 @@
+[toolchain]
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+# [programs.localnet]
+using_spl_simplified = "42rHop5WdmZQTpcQ3RFbv73m5fP5jyJYv45D2gNcZHpH"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+# cluster = "Localnet"
+wallet = "/home/empiric-u3/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

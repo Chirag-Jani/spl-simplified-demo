@@ -1,0 +1,25 @@
+[package]
+name = "using_spl_simplified"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "using_spl_simplified"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"
+spl-simplified = { path = "/home/empiric-u3/Documents/Chirag-Jani/SOLANA/RUST/CRATES/spl-simplified", features = [
+    "metadata",
+    "simplespl",
+] }
+mpl-token-metadata = "3.1.0"
