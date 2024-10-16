@@ -34,10 +34,10 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
   );
 
   const payer = program.provider.publicKey;
-  const mintAmount = 69;
+  const mintAmount = 420;
   const TOKEN_DECIMALS = 6;
-  const TOKEN_NAME = "Chirag Jani";
-  const TOKEN_SYMBOL = "CAJ";
+  const TOKEN_NAME = "Mukesh Rajbhar";
+  const TOKEN_SYMBOL = "VENGENCE";
   const TOKEN_URI = "https://arweave.net/Xjqaj_rYYQGrsiTk9JRqpguA813w6NGPikcRyA1vAHM";
   const TOKEN_TAX = 300; // 100 = 1%
 

@@ -1,19 +1,18 @@
 use anchor_lang::prelude::*;
 use spl_simplified::{
     associated_token::AssociatedToken,
-    metadata::{
-        create_metadata_accounts_v3, mpl_token_metadata::types::DataV2, CreateMetadataAccountsV3,
-        Metadata as Metaplex,
-    },
+    metadata::Metadata as Metaplex,
     token::{Mint, Token, TokenAccount},
 };
 
 use spl_simplified::simplespl::mint_simple;
 
-declare_id!("HvZHp3mHGRTNg4s7VzPbFQLbXqzB5fBVfJT6XM2N7uXq");
+declare_id!("44dxBQhdV6Fp4BBQg5bK3SNgQuFjSbSBYQdrC5rWye8Q");
 
 #[program]
 pub mod using_spl_simplified {
+    use spl_simplified::simplespl::{metadata_thing, MetaCtx};
+
     use super::*;
 
     pub fn mint_simple_tokens(
@@ -28,33 +27,25 @@ pub mod using_spl_simplified {
         let signer_seeds = &[token_name_bytes, &[ctx.bumps.mint]];
         let signer = [&signer_seeds[..]];
 
-        // Create the token metadata data
-        let token_data: DataV2 = DataV2 {
-            name: token_name.clone(),
-            symbol: token_symbol,
-            uri: token_uri,
-            seller_fee_basis_points: token_tax,
-            creators: None,
-            collection: None,
-            uses: None,
-        };
-
-        // Create the metadata accounts
-        let metadata_ctx = CpiContext::new_with_signer(
-            ctx.accounts.token_metadata_program.to_account_info(),
-            CreateMetadataAccountsV3 {
-                payer: ctx.accounts.payer.to_account_info(),
-                update_authority: ctx.accounts.mint.to_account_info(),
-                mint: ctx.accounts.mint.to_account_info(),
-                metadata: ctx.accounts.metadata.to_account_info(),
-                mint_authority: ctx.accounts.mint.to_account_info(),
-                system_program: ctx.accounts.system_program.to_account_info(),
-                rent: ctx.accounts.rent.to_account_info(),
-            },
-            &signer,
-        );
-
-        create_metadata_accounts_v3(metadata_ctx, token_data, false, true, None)?;
+        metadata_thing(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_metadata_program.to_account_info(),
+                MetaCtx {
+                    metadata: ctx.accounts.metadata.clone(),
+                    token_metadata_program: ctx.accounts.token_metadata_program.to_account_info(),
+                    mint: ctx.accounts.mint.clone().to_account_info(),
+                    payer: ctx.accounts.payer.clone().to_account_info(),
+                    mint_authority: ctx.accounts.mint.clone().to_account_info(),
+                    update_authority: ctx.accounts.mint.clone().to_account_info(),
+                    system_program: ctx.accounts.system_program.clone(),
+                },
+                &signer,
+            ),
+            token_name.clone(),
+            token_symbol,
+            token_uri,
+            token_tax,
+        )?;
 
         // Mint the tokens using mint_simple
         let mint_call = mint_simple(
