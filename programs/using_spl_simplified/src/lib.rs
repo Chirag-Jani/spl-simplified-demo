@@ -5,13 +5,11 @@ use spl_simplified::{
     token::{Mint, Token, TokenAccount},
 };
 
-use spl_simplified::simplespl::mint_simple;
-
-declare_id!("44dxBQhdV6Fp4BBQg5bK3SNgQuFjSbSBYQdrC5rWye8Q");
+declare_id!("A8742g7zCzeXVxQdBGSrH1GtE8dBga8XWNXPoC3FiuJb");
 
 #[program]
 pub mod using_spl_simplified {
-    use spl_simplified::simplespl::{metadata_thing, MetaCtx};
+    use spl_simplified::simplespl::mint_simple;
 
     use super::*;
 
@@ -23,32 +21,21 @@ pub mod using_spl_simplified {
         token_tax: u16,
         quantity: u64,
     ) -> Result<()> {
-        let token_name_bytes = token_name.as_bytes();
-        let signer_seeds = &[token_name_bytes, &[ctx.bumps.mint]];
-        let signer = [&signer_seeds[..]];
-
-        metadata_thing(
-            CpiContext::new_with_signer(
-                ctx.accounts.token_metadata_program.to_account_info(),
-                MetaCtx {
-                    metadata: ctx.accounts.metadata.clone(),
-                    token_metadata_program: ctx.accounts.token_metadata_program.to_account_info(),
-                    mint: ctx.accounts.mint.clone().to_account_info(),
-                    payer: ctx.accounts.payer.clone().to_account_info(),
-                    mint_authority: ctx.accounts.mint.clone().to_account_info(),
-                    update_authority: ctx.accounts.mint.clone().to_account_info(),
-                    system_program: ctx.accounts.system_program.clone(),
-                },
-                &signer,
-            ),
-            token_name.clone(),
-            token_symbol,
-            token_uri,
-            token_tax,
-        )?;
+        let signer_seeds = &[token_name.as_bytes(), &[ctx.bumps.mint]];
 
         // Mint the tokens using mint_simple
         let mint_call = mint_simple(
+            token_name.clone(),
+            token_symbol.clone(),
+            token_uri.clone(),
+            token_tax.clone(),
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.token_metadata_program.to_account_info(),
+            ctx.accounts.mint.to_account_info(),
+            ctx.accounts.metadata.to_account_info(),
+            ctx.accounts.mint.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.rent.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.mint.to_account_info(),
             ctx.accounts.destination.to_account_info(),

@@ -6,7 +6,7 @@ skip-lint = false
 
 [programs.devnet]
 # [programs.localnet]
-using_spl_simplified = "44dxBQhdV6Fp4BBQg5bK3SNgQuFjSbSBYQdrC5rWye8Q"
+using_spl_simplified = "A8742g7zCzeXVxQdBGSrH1GtE8dBga8XWNXPoC3FiuJb"
 
 [registry]
 url = "https://api.apr.dev"
