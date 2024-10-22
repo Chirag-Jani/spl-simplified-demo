@@ -5,11 +5,11 @@ use spl_simplified::{
     token::{Mint, Token, TokenAccount},
 };
 
-declare_id!("A8742g7zCzeXVxQdBGSrH1GtE8dBga8XWNXPoC3FiuJb");
+declare_id!("2rkEA4j1AkhJ15tP9M1SfezGw94uR8Qd7oRH655gY8Hh");
 
 #[program]
 pub mod using_spl_simplified {
-    use spl_simplified::simplespl::mint_simple;
+    use spl_simplified::simplespl::{mint_simple, transfer_simple};
 
     use super::*;
 
@@ -51,8 +51,33 @@ pub mod using_spl_simplified {
 
         Ok(())
     }
-}
 
+    pub fn transfer_simple_tokens(
+        ctx: Context<TransferTokens>,
+        token_name: String,
+        amount: u64,
+    ) -> Result<()> {
+        let signer_seeds = &[token_name.as_bytes(), &[ctx.bumps.mint]];
+
+        // Call the transfer_simple function
+        let transfer_call = transfer_simple(
+            ctx.accounts.mint.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.source.key(),
+            ctx.accounts.destination.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
+            amount,
+            signer_seeds,
+        );
+
+        match transfer_call {
+            Ok(_) => msg!("Transfer Successful."),
+            Err(e) => msg!("Transfer Failed: {:?}", e),
+        }
+
+        Ok(())
+    }
+}
 #[derive(Accounts)]
 #[instruction(token_name: String)]
 pub struct MintTokens<'info> {
@@ -82,4 +107,23 @@ pub struct MintTokens<'info> {
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_metadata_program: Program<'info, Metaplex>,
+}
+
+#[derive(Accounts)]
+#[instruction(token_name: String)]
+pub struct TransferTokens<'info> {
+    #[account(
+        mut,
+        seeds = [token_name.as_bytes()],
+        bump,
+    )]
+    pub mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub source: Account<'info, TokenAccount>, // Source account from which tokens will be transferred
+    #[account(mut)]
+    pub destination: Account<'info, TokenAccount>, // Destination account
+    pub authority: Signer<'info>, // Authority to approve the transfer (this should be myWallet)
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
 }
