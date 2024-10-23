@@ -93,4 +93,4 @@ anchor test
 
 ## SPL Token Helper Crate
 
-The project uses the latest version of the **SPL Token Helper** crate. You can find the working version demo [here](https://github.com/Chirag-Jani/spl-simplified-demo/commit/ff3ace56dfba5ca60eb666b4e0285bab65c7128e).
+The project uses the latest version of the **SPL Token Helper** crate. You can find the working version demo [here](https://github.com/Chirag-Jani/spl-simplified-demo/commit/71849ab87738ea4f08951e146fd760a4689cb327).
