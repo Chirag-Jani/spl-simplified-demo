@@ -4,6 +4,9 @@
 seeds = false
 skip-lint = false
 
+[workspace]
+resolver = "2"
+
 [programs.devnet]
 # [programs.localnet]
 using_spl_simplified = "2rkEA4j1AkhJ15tP9M1SfezGw94uR8Qd7oRH655gY8Hh"

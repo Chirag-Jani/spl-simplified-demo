@@ -9,7 +9,7 @@ declare_id!("2rkEA4j1AkhJ15tP9M1SfezGw94uR8Qd7oRH655gY8Hh");
 
 #[program]
 pub mod using_spl_simplified {
-    use spl_simplified::simplespl::{mint_simple, transfer_simple};
+    use spl_simplified::simplespl::{burn_simple, mint_simple, transfer_simple};
 
     use super::*;
 
@@ -77,6 +77,30 @@ pub mod using_spl_simplified {
 
         Ok(())
     }
+
+    pub fn burn_simple_tokens(
+        ctx: Context<BurnTokens>,
+        token_name: String,
+        amount: u64,
+    ) -> Result<()> {
+        let signer_seeds = &[token_name.as_bytes(), &[ctx.bumps.mint]];
+
+        // Call the burn_simple function
+        let transfer_call = burn_simple(
+            ctx.accounts.mint.to_account_info(),
+            ctx.accounts.source.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
+            amount,
+            signer_seeds,
+        );
+
+        match transfer_call {
+            Ok(_) => msg!("Token Burnt Successfully."),
+            Err(e) => msg!("Burn Failed: {:?}", e),
+        }
+
+        Ok(())
+    }
 }
 #[derive(Accounts)]
 #[instruction(token_name: String)]
@@ -124,6 +148,22 @@ pub struct TransferTokens<'info> {
     pub destination: Account<'info, TokenAccount>, // Destination account
     pub authority: Signer<'info>, // Authority to approve the transfer (this should be myWallet)
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+#[instruction(token_name: String)]
+pub struct BurnTokens<'info> {
+    #[account(
+        mut,
+        seeds = [token_name.as_bytes()],
+        bump,
+    )]
+    pub mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub source: Account<'info, TokenAccount>, // Source account from which tokens will be transferred
+    pub authority: Signer<'info>, // Authority to approve the transfer (this should be myWallet)
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
 }

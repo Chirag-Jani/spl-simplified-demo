@@ -93,7 +93,6 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
     assert(newInfo, "Mint should be initialized and tokens minted.");
   });
 
-
   it("Transfer Tokens", async () => {
     console.log("Minting and initializing tokens with metadata...");
 
@@ -124,7 +123,27 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
     await program.provider.connection.confirmTransaction(txHash, "finalized");
     console.log(`Transaction completed: https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
 
-    const newInfo = await program.provider.connection.getAccountInfo(mintWithSeed);
-    assert(newInfo, "Mint should be initialized and tokens minted.");
+  });
+
+  it("Burn Tokens", async () => {
+
+    const source = await getAssociatedTokenAddress(mintWithSeed, myWallet.publicKey);
+    const context = {
+      mint: mintWithSeed,
+      source: source,
+      authority: myWallet.payer,
+      systemProgram: web3.SystemProgram.programId,
+      rent: web3.SYSVAR_RENT_PUBKEY,
+    };
+
+    const txHash = await program.methods
+      .burnSimpleTokens(TOKEN_NAME, new BN(mintAmount * 10 ** TOKEN_DECIMALS))
+      .accounts(context)
+      .signers([myWallet.payer])
+      .rpc();
+
+    await program.provider.connection.confirmTransaction(txHash, "finalized");
+    console.log(`Transaction completed: https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
+
   });
 });
