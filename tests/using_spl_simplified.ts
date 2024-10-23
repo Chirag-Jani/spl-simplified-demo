@@ -5,8 +5,9 @@ import { UsingSplSimplified } from "../target/types/using_spl_simplified";
 import { assert } from "chai";
 import { BN } from "bn.js";
 import { clusterApiUrl, Connection, Keypair } from "@solana/web3.js";
-import { getOrCreateAssociatedTokenAccount, createAssociatedTokenAccount, getAssociatedTokenAddress } from "@solana/spl-token";
+import { createAssociatedTokenAccount, getAssociatedTokenAddress } from "@solana/spl-token";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 describe("TESTING TOKEN CREATION AND MINTING", () => {
@@ -36,10 +37,9 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
   const payer = program.provider.publicKey;
   const mintAmount = 100;
   const TOKEN_DECIMALS = 6;
-  const TOKEN_NAME = "Token8";
-  const TOKEN_SYMBOL = "TKN8";
-  const TOKEN_URI = "";
-  // const TOKEN_URI = "https://arweave.net/Xjqaj_rYYQGrsiTk9JRqpguA813w6NGPikcRyA1vAHM";
+  const TOKEN_NAME = "Token Name";
+  const TOKEN_SYMBOL = "SYM";
+  const TOKEN_URI = ""; // You can add a valid URI if needed
   const TOKEN_TAX = 5100; // 100 = 1%
 
   const [mintWithSeed] = web3.PublicKey.findProgramAddressSync(
@@ -55,7 +55,6 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
     ],
     TOKEN_METADATA_PROGRAM_ID
   );
-
 
   it("Mint Tokens with Metadata Creation", async () => {
     console.log("Minting and initializing tokens with metadata...");
@@ -94,14 +93,18 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
   });
 
   it("Transfer Tokens", async () => {
-    console.log("Minting and initializing tokens with metadata...");
+    console.log("Transferring tokens...");
+    // console.log("----------- Skipping for now -----------");
+    // return;
 
     const source = await getAssociatedTokenAddress(mintWithSeed, myWallet.publicKey);
-    const kp = Keypair.generate();
-    const wal = new anchor.Wallet(kp);
-    const destination = await getAssociatedTokenAddress(mintWithSeed, myWallet.publicKey);
+    const destination = await getAssociatedTokenAddress(mintWithSeed, myWallet.publicKey); // Change if transferring to another wallet
 
-    console.log("Destination is: ", destination);
+    // Create associated token account for destination if it doesn't exist
+    const destinationInfo = await program.provider.connection.getAccountInfo(destination);
+    if (!destinationInfo) {
+      await createAssociatedTokenAccount(rpcConnection, myWallet.payer, mintWithSeed, myWallet.publicKey);
+    }
 
     const context = {
       mint: mintWithSeed,
@@ -113,7 +116,6 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
       rent: web3.SYSVAR_RENT_PUBKEY,
     };
 
-    console.log(context)
     const txHash = await program.methods
       .transferSimpleTokens(TOKEN_NAME, new BN(mintAmount * 10 ** TOKEN_DECIMALS))
       .accounts(context)
@@ -122,15 +124,23 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
     console.log(`Transaction completed: https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-
   });
 
   it("Burn Tokens", async () => {
+    console.log("Burning tokens...");
 
     const source = await getAssociatedTokenAddress(mintWithSeed, myWallet.publicKey);
+
+    // Check if the source account has enough tokens to burn
+    const sourceInfo = await program.provider.connection.getAccountInfo(source);
+    if (!sourceInfo) {
+      throw new Error("Source token account does not exist.");
+    }
+
     const context = {
       mint: mintWithSeed,
       source: source,
+      tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
       authority: myWallet.payer,
       systemProgram: web3.SystemProgram.programId,
       rent: web3.SYSVAR_RENT_PUBKEY,
@@ -144,6 +154,5 @@ describe("TESTING TOKEN CREATION AND MINTING", () => {
 
     await program.provider.connection.confirmTransaction(txHash, "finalized");
     console.log(`Transaction completed: https://explorer.solana.com/tx/${txHash}?cluster=devnet`);
-
   });
 });

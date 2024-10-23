@@ -5,7 +5,7 @@ use spl_simplified::{
     token::{Mint, Token, TokenAccount},
 };
 
-declare_id!("2rkEA4j1AkhJ15tP9M1SfezGw94uR8Qd7oRH655gY8Hh");
+declare_id!("cWBawXsh3Xvo4LjrTSCGQPAskNeiNn1dNGq4T8ZNiq6");
 
 #[program]
 pub mod using_spl_simplified {
@@ -28,7 +28,7 @@ pub mod using_spl_simplified {
             token_name.clone(),
             token_symbol.clone(),
             token_uri.clone(),
-            token_tax.clone(),
+            token_tax, // No need to clone
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.token_metadata_program.to_account_info(),
             ctx.accounts.mint.to_account_info(),
@@ -46,7 +46,7 @@ pub mod using_spl_simplified {
 
         match mint_call {
             Ok(_) => msg!("Mint Successful."),
-            Err(e) => msg!("Some Error Occurred: {:?}", e),
+            Err(e) => msg!("Mint Error: {:?}", e),
         }
 
         Ok(())
@@ -72,7 +72,7 @@ pub mod using_spl_simplified {
 
         match transfer_call {
             Ok(_) => msg!("Transfer Successful."),
-            Err(e) => msg!("Transfer Failed: {:?}", e),
+            Err(e) => msg!("Transfer Error: {:?}", e),
         }
 
         Ok(())
@@ -86,22 +86,24 @@ pub mod using_spl_simplified {
         let signer_seeds = &[token_name.as_bytes(), &[ctx.bumps.mint]];
 
         // Call the burn_simple function
-        let transfer_call = burn_simple(
+        let burn_call = burn_simple(
             ctx.accounts.mint.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
             ctx.accounts.source.to_account_info(),
             ctx.accounts.authority.to_account_info(),
             amount,
             signer_seeds,
         );
 
-        match transfer_call {
+        match burn_call {
             Ok(_) => msg!("Token Burnt Successfully."),
-            Err(e) => msg!("Burn Failed: {:?}", e),
+            Err(e) => msg!("Burn Error: {:?}", e),
         }
 
         Ok(())
     }
 }
+
 #[derive(Accounts)]
 #[instruction(token_name: String)]
 pub struct MintTokens<'info> {
@@ -146,7 +148,7 @@ pub struct TransferTokens<'info> {
     pub source: Account<'info, TokenAccount>, // Source account from which tokens will be transferred
     #[account(mut)]
     pub destination: Account<'info, TokenAccount>, // Destination account
-    pub authority: Signer<'info>, // Authority to approve the transfer (this should be myWallet)
+    pub authority: Signer<'info>, // Authority to approve the transfer
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
@@ -162,8 +164,9 @@ pub struct BurnTokens<'info> {
     )]
     pub mint: Account<'info, Mint>,
     #[account(mut)]
-    pub source: Account<'info, TokenAccount>, // Source account from which tokens will be transferred
-    pub authority: Signer<'info>, // Authority to approve the transfer (this should be myWallet)
+    pub source: Account<'info, TokenAccount>, // Source account from which tokens will be burnt
+    pub authority: Signer<'info>, // Authority to approve the burn
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
 }

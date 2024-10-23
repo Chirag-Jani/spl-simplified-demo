@@ -8,15 +8,13 @@ skip-lint = false
 resolver = "2"
 
 [programs.devnet]
-# [programs.localnet]
-using_spl_simplified = "2rkEA4j1AkhJ15tP9M1SfezGw94uR8Qd7oRH655gY8Hh"
+using_spl_simplified = "cWBawXsh3Xvo4LjrTSCGQPAskNeiNn1dNGq4T8ZNiq6"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "Devnet"
-# cluster = "Localnet"
 wallet = "/home/empiric-u3/.config/solana/id.json"
 
 [scripts]
